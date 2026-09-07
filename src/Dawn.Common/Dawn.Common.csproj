@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net10.0-windows</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Authors>JustArion</Authors>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Windows" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <DefineConstants>$(DefineConstants);NET10_0_WINDOWS_OR_GREATER</DefineConstants>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+    
+
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="4.4.0" />
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console.LogThemes" Version="0.4.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
+        <PackageReference Include="System.Reactive" Version="7.0.0" />
+    </ItemGroup>
+
+    <!--  This embeds debug symbols into release builds, while stripping out useless path info  -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <PathMap>$(SolutionDir)=/</PathMap>
+    </PropertyGroup>
+    <!---->
+</Project>

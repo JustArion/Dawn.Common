@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Build/">
+    <Project Path="build/BuildSystem.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/Tests/Dawn.Common.Windows.Tests/Dawn.Common.Windows.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Windows/">
+    <Project Path="src/Dawn.Common.Windows.Desktop/Dawn.Common.Windows.Desktop.csproj" />
+    <Project Path="src/Dawn.Common.Windows/Dawn.Common.Windows.csproj" />
+  </Folder>
+  <Project Path="src/Dawn.Common/Dawn.Common.csproj" />
+</Solution>

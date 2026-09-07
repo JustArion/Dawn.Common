@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="securifybv.ShellLink" Version="[0.1.0]" />
+        <PackageReference Include="TaskScheduler" Version="2.12.2" />
+        <PackageReference Include="Vanara.PInvoke.NtDll" Version="5.0.7" />
+        <PackageReference Include="Vanara.PInvoke.Shell32" Version="5.0.7" />
+        <PackageReference Include="Vanara.PInvoke.User32" Version="5.0.7" />
+        <PackageReference Include="Vanara.PInvoke.Version" Version="5.0.7" />
+    </ItemGroup>
+
+    <!--  This embeds debug symbols into release builds, while stripping out useless path info  -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <PathMap>$(SolutionDir)=/</PathMap>
+    </PropertyGroup>
+    <!---->
+</Project>

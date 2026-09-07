@@ -1,0 +1,11 @@
+global using Fallout.Common;
+global using Fallout.Common.CI;
+global using Fallout.Common.Execution;
+global using Fallout.Common.IO;
+global using Fallout.Common.ProjectModel;
+global using Fallout.Common.Tooling;
+global using Fallout.Common.Utilities.Collections;
+global using Fallout.Common.Tools.DotNet;
+global using static Fallout.Common.EnvironmentInfo;
+global using static Fallout.Common.IO.PathConstruction;
+global using static Fallout.Common.Tools.DotNet.DotNetTasks;

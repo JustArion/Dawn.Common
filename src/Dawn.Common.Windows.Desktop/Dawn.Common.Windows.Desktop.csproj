@@ -1,0 +1,34 @@
+﻿<!-- Will require the Desktop Runtime -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <UseWPF>true</UseWPF>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Vanara.PInvoke.User32" Version="5.0.7" />
+        <PackageReference Include="TaskScheduler" Version="2.12.2" />
+        <PackageReference Include="Vanara.PInvoke.Shell32" Version="5.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
+    </ItemGroup>
+
+    <!--  This embeds debug symbols into release builds, while stripping out useless path info  -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <PathMap>$(SolutionDir)=/</PathMap>
+    </PropertyGroup>
+    <!---->
+</Project>
