@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Dawn.Common.Windows\Dawn.Common.Windows.csproj" />
-      <ProjectReference Include="..\..\Dawn.Common\Dawn.Common.csproj" />
+      <ProjectReference Include="..\..\src\Dawn.Common.Windows\Dawn.Common.Windows.csproj" />
+      <ProjectReference Include="..\..\src\Dawn.Common\Dawn.Common.csproj" />
     </ItemGroup>
 </Project>

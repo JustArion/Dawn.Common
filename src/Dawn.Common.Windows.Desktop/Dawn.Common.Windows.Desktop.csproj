@@ -1,4 +1,4 @@
-﻿<!-- Will require the Desktop Runtime -->
+<!-- Will require the Desktop Runtime -->
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
+        <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
     </ItemGroup>
 
     <!--  This embeds debug symbols into release builds, while stripping out useless path info  -->

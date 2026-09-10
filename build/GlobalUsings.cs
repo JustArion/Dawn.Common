@@ -9,3 +9,7 @@ global using Fallout.Common.Tools.DotNet;
 global using static Fallout.Common.EnvironmentInfo;
 global using static Fallout.Common.IO.PathConstruction;
 global using static Fallout.Common.Tools.DotNet.DotNetTasks;
+global using static Fallout.Common.Tools.Git.GitTasks;
+global using static Fallout.Common.Tooling.ProcessTasks;
+global using static Fallout.Common.ChangeLog.ChangelogTasks;
+global using static Fallout.Common.Tools.NuGet.NuGetTasks;

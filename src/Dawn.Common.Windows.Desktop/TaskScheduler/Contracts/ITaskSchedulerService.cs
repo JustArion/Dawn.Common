@@ -1,8 +1,8 @@
-using Dawn.Common.Windows.Desktop.TaskScheduler.Models;
+using Dawn.Common.Windows.TaskScheduler.Models;
 using Microsoft.Win32.TaskScheduler;
 using Task = Microsoft.Win32.TaskScheduler.Task;
 
-namespace Dawn.Common.Windows.Desktop.TaskScheduler.Contracts;
+namespace Dawn.Common.Windows.TaskScheduler.Contracts;
 
 public interface ITaskSchedulerService
 {

@@ -13,9 +13,9 @@ public static class LoggerConfigurationEx
 {
     private const string LOGGING_FORMAT = "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
     
+        
     #if NET10_0_WINDOWS_OR_GREATER
     private static readonly Lazy<bool> isAdmin = new(() => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator));
-
     private static bool IsAdmin() => isAdmin.Value;
     #endif
     private static string GetLogFileName()
@@ -24,10 +24,10 @@ public static class LoggerConfigurationEx
         var logFileType = IsAdmin() ? "_Admin" : "_User";
         return $"{Application.ProductName}{logFileType}.log";
         #else
-        return $"{Process.GetCurrentProcess().ProcessName}.log";
+        return Process.GetCurrentProcess().ProcessName + ".log";
         #endif
     }
-
+    
     extension(LoggerConfiguration config)
     {
         public LoggerConfiguration AddCommon(CommonLoggingOptions options)
@@ -56,7 +56,6 @@ public static class LoggerConfigurationEx
                     fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20, // 20mb
                     flushToDiskInterval: TimeSpan.FromSeconds(1));
             }
-
 
             config.WriteTo.Seq(string.IsNullOrWhiteSpace(customSeqUrl)
                     ? "http://localhost:9999"

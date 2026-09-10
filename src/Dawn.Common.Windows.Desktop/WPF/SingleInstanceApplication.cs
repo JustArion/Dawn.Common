@@ -1,7 +1,7 @@
 using System.Text;
 using Application = System.Windows.Application;
 
-namespace Dawn.Common.Windows.Desktop.WPF;
+namespace Dawn.Common.Windows.WPF;
 
 public class SingleInstanceApplication : Application
 {

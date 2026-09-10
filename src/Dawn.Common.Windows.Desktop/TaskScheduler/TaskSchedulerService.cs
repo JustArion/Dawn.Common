@@ -1,11 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Threading;
-using Dawn.Common.Windows.Desktop.TaskScheduler.Contracts;
-using Dawn.Common.Windows.Desktop.TaskScheduler.Models;
+using Dawn.Common.Windows.TaskScheduler.Contracts;
+using Dawn.Common.Windows.TaskScheduler.Models;
 using Microsoft.Win32.TaskScheduler;
 using Action = System.Action;
 using Task = Microsoft.Win32.TaskScheduler.Task;
 
-namespace Dawn.Common.Windows.Desktop.TaskScheduler;
+namespace Dawn.Common.Windows.TaskScheduler;
 
 public class TaskSchedulerService : ITaskSchedulerService, IDisposable
 {
@@ -39,9 +40,27 @@ public class TaskSchedulerService : ITaskSchedulerService, IDisposable
         {
             var folder = Folder.Value;
             return folder.AllTasks
-                .Select(SchedulerInfo.FromTask)
+                .Select(task =>
+                {
+                    string? execActionPath = null;
+                    string? execActionArguments = null;
+                    if (task.Definition.Actions.FirstOrDefault(a => a.ActionType == TaskActionType.Execute) is ExecAction execAction)
+                    {
+                        execActionPath = execAction.Path;
+                        execActionArguments = execAction.Arguments;
+                    }
+
+                    return new SchedulerInfo(
+                        task.Name,
+                        task.Definition.Principal.RunLevel,
+                        execActionPath,
+                        execActionArguments,
+                        task.Definition.RegistrationInfo.Date,
+                        task.Enabled
+                    );
+                })
                 .ToList();
-        })!;
+        });
     }
 
     public void ToggleEnabled(Task task)
@@ -67,25 +86,6 @@ public class TaskSchedulerService : ITaskSchedulerService, IDisposable
         {
             task.Definition.Settings.Enabled = false;
             task.RegisterChanges();
-        });
-    }
-    
-    public SchedulerInfo? GetSchedulerInfo(string key)
-    {
-        if (_disposed)
-            ObjectDisposedException.ThrowIf(_disposed, typeof(TaskSchedulerService));
-
-        return ExecuteOnDedicatedStaThread(() =>
-        {
-            Task? task;
-            if (string.IsNullOrWhiteSpace(_folderName))
-                task = _scheduler.Value.GetTask(key);
-            else
-            {
-                var folder = Folder.Value;
-                task = folder.Tasks.FirstOrDefault(x => x.Name == key);
-            }
-            return SchedulerInfo.FromTask(task);
         });
     }
 
@@ -159,52 +159,6 @@ public class TaskSchedulerService : ITaskSchedulerService, IDisposable
             catch (Exception e)
             {
                 _logger.Error(e, "Failed to check if task '{TaskName}' is present", key);
-                return false;
-            }
-        });
-    }
-    
-    public bool UpdatePath(string key, FileInfo filePath)
-    {
-        if (_disposed)
-            ObjectDisposedException.ThrowIf(_disposed, typeof(TaskSchedulerService));
-        
-        if (!filePath.Exists)
-            throw new ArgumentNullException(nameof(filePath));
-
-        return ExecuteOnDedicatedStaThread(() =>
-        {
-            try
-            {
-                if (!ContainsTask(key))
-                {
-                    _logger.Warning("Task '{TaskName}' is not present", key);
-                    return false;
-                }
-
-                using var task = GetTask(key);
-
-                if (task?.Definition.Actions.FirstOrDefault() is not ExecAction act)
-                    return false;
-
-                if (act.Path == filePath.FullName)
-                    return false;
-
-                if (act.WorkingDirectory == filePath.DirectoryName && act.Path == filePath.Name)
-                    return false;
-
-                var oldPath = Path.Combine(act.WorkingDirectory, act.Path);
-                act.WorkingDirectory = filePath.DirectoryName;
-                act.Path = filePath.Name;
-                
-                task.RegisterChanges();
-                    
-                _logger.Information("Task '{TaskName}' was updated from path {OldPath} to new path {NewPath}", key, oldPath, filePath.FullName);
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e, "Failed to remove task '{TaskName}'", key);
                 return false;
             }
         });
@@ -373,3 +327,4 @@ public class TaskSchedulerService : ITaskSchedulerService, IDisposable
 
     ~TaskSchedulerService() => ReleaseUnmanagedResources();
 }
+

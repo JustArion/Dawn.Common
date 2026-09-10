@@ -9,16 +9,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="securifybv.ShellLink" Version="[0.1.0]" />
         <PackageReference Include="TaskScheduler" Version="2.12.2" />
         <PackageReference Include="Vanara.PInvoke.NtDll" Version="5.0.7" />
         <PackageReference Include="Vanara.PInvoke.Shell32" Version="5.0.7" />
         <PackageReference Include="Vanara.PInvoke.User32" Version="5.0.7" />
         <PackageReference Include="Vanara.PInvoke.Version" Version="5.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Dawn.Common\Dawn.Common.csproj" />
     </ItemGroup>
 
     <!--  This embeds debug symbols into release builds, while stripping out useless path info  -->

@@ -26,9 +26,14 @@
       "enum": [
         "Clean",
         "Compile",
-        "Pack",
+        "PackAll",
+        "PackCommon",
+        "PackCommonWindows",
+        "PackCommonWindowsDesktop",
+        "Publish",
         "Restore",
-        "Test"
+        "Test",
+        "TestInitialize"
       ]
     },
     "Verbosity": {
@@ -120,6 +125,10 @@
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
+        },
+        "Version": {
+          "type": "string",
+          "description": "Optional version override. When empty, the current tag (v*/p*) is used if available"
         }
       }
     },

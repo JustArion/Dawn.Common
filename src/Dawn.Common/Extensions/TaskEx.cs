@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Dawn.Common.Extensions;
+﻿namespace Dawn.Common.Extensions;
 
 public static class TaskEx
 {

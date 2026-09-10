@@ -8,7 +8,6 @@
         <FalloutRootDirectory>..</FalloutRootDirectory>
         <FalloutScriptDirectory>..</FalloutScriptDirectory>
         <IsPackable>false</IsPackable>
-        <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UseArtifactsOutput>false</UseArtifactsOutput>
     </PropertyGroup>

@@ -1,10 +1,5 @@
-﻿using System.Diagnostics;
-using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
+﻿namespace Dawn.Common;
 
-namespace Dawn.Common;
-
-// Running specific operations as a lower-privledge 
 public static class Impersonation
 {
     // public static void ExecuteAsUser(Action act)
