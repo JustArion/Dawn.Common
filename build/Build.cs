@@ -250,6 +250,12 @@ class Build : FalloutBuild
             var x = s.SetProject(project)
                 .SetConfiguration(Configuration)
                 .SetVersion(version)
+                .SetRepositoryUrl(Repository.HttpsUrl)
+                .SetRepositoryType("git")
+                .SetIncludeSource(true)
+                .SetIncludeSymbols(true)
+                .SetPackageProjectUrl(Repository.HttpsUrl)
+                .SetAuthors("arion")
                 .SetOutputDirectory(PackagesDirectory)
                 .EnableNoBuild()
                 .EnableNoRestore();
