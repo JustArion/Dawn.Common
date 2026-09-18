@@ -30,7 +30,9 @@ public static class LoggerConfigurationEx
     
     extension(LoggerConfiguration config)
     {
-        public LoggerConfiguration AddCommon(CommonLoggingOptions options)
+        public LoggerConfiguration AddCommon(CommonLoggingOptions options) =>
+            config.AddCommon(options, new DirectoryInfo(Environment.CurrentDirectory));
+        public LoggerConfiguration AddCommon(CommonLoggingOptions options, DirectoryInfo logDirectory)
         {
             config.MinimumLevel.Is(LogEventLevel.Verbose)
                 .Enrich.With<ClassNameEnricher>()
@@ -46,7 +48,7 @@ public static class LoggerConfigurationEx
 
             if (includeFileLogging)
             {
-                config.WriteTo.File(Path.Combine(AppContext.BaseDirectory, GetLogFileName()),
+                config.WriteTo.File(Path.Combine(logDirectory.FullName, GetLogFileName()),
                     outputTemplate: LOGGING_FORMAT,
                     restrictedToMinimumLevel: extendedLogging
                         ? LogEventLevel.Verbose
