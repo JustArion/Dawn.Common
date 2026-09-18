@@ -241,7 +241,7 @@ class Build : FalloutBuild
 
     void PackProject(Project project, Func<DotNetPackSettings, DotNetPackSettings>? builder = null)
     {
-        var version = GetVersionTag();
+        var version = GetVersionTag().TrimStart('v').TrimStart('p');
         if (string.IsNullOrWhiteSpace(version))
             throw new Exception($"Unable to resolve package version for '{project.Name}'. Supply --version or publish a p*/v* tag.");
 
