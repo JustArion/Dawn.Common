@@ -206,7 +206,7 @@ class Build : FalloutBuild
                     .SetSource(source));
             }
 
-            (PackagesDirectory / "*.nupkg").GlobFiles().ForEach(target =>
+            (PackagesDirectory / "*symbols.nupkg").GlobFiles().ForEach(target =>
             {
                 NuGetPush(options => options
                     .SetApiKey(NugetPAT)
