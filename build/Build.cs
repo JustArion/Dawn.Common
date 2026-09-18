@@ -79,7 +79,11 @@ class Build : FalloutBuild
     AbsolutePath PackagesDirectory => ArtifactsDirectory / "packages";
     AbsolutePath ChangelogPath => RootDirectory / "CHANGELOG.md";
 
-    private string GetVersionTag() => Version ?? Repository.Tags?.FirstOrDefault(_versionPredicate) ?? GitRepository.GetTag(_versionPredicate) ?? "1.0.0"; 
+    private string GetVersionTag() => string.IsNullOrWhiteSpace(Version) 
+        ? Repository.Tags?.FirstOrDefault(_versionPredicate) ?? (GitRepository.GetTag(_versionPredicate) is var tag && string.IsNullOrWhiteSpace(tag) 
+            ? "1.0.0" 
+            : tag) 
+        : Version; 
     
     private static readonly Func<string, bool> _versionPredicate = s => s.StartsWith('v') || s.StartsWith('p');
     private static string StripPrefixes(string? str) => str?.TrimStart('v').TrimStart('p');
@@ -125,26 +129,17 @@ class Build : FalloutBuild
     Target PackCommon => _ => _
         .DependsOn(Test)
         .Produces(PackagesDirectory / "Dawn.Common*.nupkg")
-        .Executes(() =>
-        {
-            PackProject(Solution.Dawn_Common);
-        });
+        .Executes(() => PackProject(Solution.Dawn_Common));
 
     Target PackCommonWindows => _ => _
         .DependsOn(Test)
         .Produces(PackagesDirectory / "Dawn.Common.Windows*.nupkg")
-        .Executes(() =>
-        {
-            PackProject(Solution.Windows.Dawn_Common_Windows);
-        });
+        .Executes(() => PackProject(Solution.Windows.Dawn_Common_Windows));
 
     Target PackCommonWindowsDesktop => _ => _
         .DependsOn(Test)
         .Produces(PackagesDirectory / "Dawn.Common.Windows.Desktop*.nupkg")
-        .Executes(() =>
-        {
-            PackProject(Solution.Windows.Dawn_Common_Windows_Desktop);
-        });
+        .Executes(() => PackProject(Solution.Windows.Dawn_Common_Windows_Desktop));
 
     Target PackAll => _ => _
         .DependsOn(PackCommon, PackCommonWindows, PackCommonWindowsDesktop)
