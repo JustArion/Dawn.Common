@@ -249,7 +249,7 @@ class Build : FalloutBuild
                 .SetVersion(version)
                 .SetRepositoryUrl(Repository.HttpsUrl)
                 .SetRepositoryType("git")
-                .AddProperty("PackageLicenseExpression", "MIT")
+                .AddProperty("PackageLicenseExpression", "GPL-2.0-only")
                 .SetIncludeSource(true)
                 .SetIncludeSymbols(true)
                 .SetPackageProjectUrl(Repository.HttpsUrl)
