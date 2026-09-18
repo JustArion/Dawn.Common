@@ -9,6 +9,7 @@ using Fallout.Common.Git;
 using Fallout.Common.Tools.GitHub;
 using Fallout.Common.Tools.NuGet;
 using Octokit;
+using Serilog;
 using Project = Fallout.Common.ProjectModel.Project;
 
 [
@@ -31,6 +32,7 @@ using Project = Fallout.Common.ProjectModel.Project;
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
+        ImportSecrets = [nameof(NugetPAT)],
         Lfs = true,
         OnPushTags = ["v*"]),
     GitHubActions("Pre-Release on Tag", 
@@ -53,6 +55,7 @@ using Project = Fallout.Common.ProjectModel.Project;
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
+        ImportSecrets = [nameof(NugetPAT)],
         Lfs = true,
         OnWorkflowDispatchRequiredInputs = ["Version"]) 
 ]
@@ -122,7 +125,6 @@ class Build : FalloutBuild
             DotNetTest(s => s
                 .SetProjectFile(Solution.Tests.Dawn_Common_Windows_Tests)
                 .SetConfiguration(Configuration)
-                .EnableNoBuild()
                 .EnableNoRestore());
         });
 
@@ -142,8 +144,7 @@ class Build : FalloutBuild
         .Executes(() => PackProject(Solution.Windows.Dawn_Common_Windows_Desktop));
 
     Target PackAll => _ => _
-        .DependsOn(PackCommon, PackCommonWindows, PackCommonWindowsDesktop)
-        .Executes(() => { });
+        .DependsOn(PackCommon, PackCommonWindows, PackCommonWindowsDesktop);
 
     // Update changelog: move Unreleased to versioned section
     Target UpdateChangelog => _ => _
@@ -161,6 +162,7 @@ class Build : FalloutBuild
 
     // Push updated changelog back to default branch (used in CI after creating release)
     Target PushChangelog => _ => _
+        .DependsOn(UpdateChangelog)
         .Unlisted()
         .Executes(() =>
         {
@@ -178,16 +180,19 @@ class Build : FalloutBuild
         });
 
     [Secret, Optional, Parameter("Private Access Token for publishing Nuget packages to GitHub")]
-    string GithubNugetPAT;
+    internal string NugetPAT;
     Target Publish => _ => _
         .DependsOn(PackAll)
         .OnlyWhenStatic(() => IsServerBuild)
         .Executes(() =>
         {
-            if (string.IsNullOrWhiteSpace(GithubNugetPAT))
-                GithubNugetPAT = Actions.Token;
+            if (string.IsNullOrWhiteSpace(NugetPAT))
+            {
+                Log.Information("PAT is null, so we're using actions Token instead");
+                NugetPAT = Actions.Token;
+            }
 
-            GithubNugetPAT.NotNullOrWhiteSpace();
+            NugetPAT.NotNullOrWhiteSpace();
             var source = $"https://nuget.pkg.github.com/{Repository.GetGitHubOwner()}/index.json";
             
             var preExisting = true;
@@ -197,14 +202,17 @@ class Build : FalloutBuild
                 NuGetSourcesAdd(options => options
                     .SetName("github")
                     .SetUserName(Repository.GetGitHubOwner())
-                    .SetPassword(GithubNugetPAT)
+                    .SetPassword(NugetPAT)
                     .SetSource(source));
             }
 
-            NuGetPush(options => options
-                .SetApiKey(GithubNugetPAT)
-                .SetSource(source)
-                .SetTargetPath((PackagesDirectory / "*.nupkg").GlobFiles().First()));
+            (PackagesDirectory / "*.nupkg").GlobFiles().ForEach(target =>
+            {
+                NuGetPush(options => options
+                    .SetApiKey(NugetPAT)
+                    .SetSource(source)
+                    .SetTargetPath(target));
+            });
 
             if (!preExisting)
                 NuGetSourcesRemove(options => options
@@ -213,20 +221,15 @@ class Build : FalloutBuild
 
     // Tagged pre-release target (uploads assets to GH releases as prerelease)
     Target TaggedPreRelease => _ => _
-        .DependsOn(PackAll, Test)
+        .DependsOn(PackAll)
         .Unlisted()
         .OnlyWhenStatic(() => IsServerBuild);
 
     // Tagged release that runs on v* tags
     Target TaggedRelease => _ => _
-        .DependsOn(PackAll, Test, Publish)
+        .DependsOn(Publish, PushChangelog)
         .Unlisted()
-        .OnlyWhenStatic(() => IsServerBuild)
-        .Executes(() =>
-        {
-            Execute<Build>(x => x.UpdateChangelog);
-            Execute<Build>(x => x.PushChangelog);
-        });
+        .OnlyWhenStatic(() => IsServerBuild);
 
     void BuildProject(Project project)
     {

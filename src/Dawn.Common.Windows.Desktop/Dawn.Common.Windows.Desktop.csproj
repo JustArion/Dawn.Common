@@ -28,7 +28,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DebugSymbols>true</DebugSymbols>
         <DebugType>embedded</DebugType>
-        <PathMap>$(SolutionDir)=/</PathMap>
+        <PathMap>$(SolutionDir)\=\</PathMap>
     </PropertyGroup>
     <!---->
 </Project>

@@ -31,9 +31,12 @@
         "PackCommonWindows",
         "PackCommonWindowsDesktop",
         "Publish",
+        "PushChangelog",
         "Restore",
+        "TaggedPreRelease",
+        "TaggedRelease",
         "Test",
-        "TestInitialize"
+        "UpdateChangelog"
       ]
     },
     "Verbosity": {
@@ -121,6 +124,11 @@
             "Release"
           ],
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)"
+        },
+        "NugetPAT": {
+          "type": "string",
+          "description": "Private Access Token for publishing Nuget packages to GitHub",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
         "Solution": {
           "type": "string",

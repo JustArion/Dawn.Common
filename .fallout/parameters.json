@@ -1,4 +1,6 @@
 {
   "$schema": "build.schema.json",
-  "Solution": "Dawn.Common.slnx"
+  "Solution": "Dawn.Common.slnx",
+  "BuildProjectFile": "build/BuildSystem.csproj",
+  "GithubNugetPAT": "v2:/T4HXt3un3\u002BS/ZECod6XGI93kKzzoz71MyV71Spw\u002BokDZ2n2YLgtJyTMazekJEB6F2T1tnyyfu4rExT0lLC9IVyQwnAHRXMS7CEVlCFVwuSU9VxA"
 }
