@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Development]
+- Added overload `LoggerConfiguration.AddCommon(CommonLoggingOptions, DirectoryInfo)`
+- `LoggerConfiguration.AddCommon` now uses the CurrentDirectory over the BaseDirectory.
+- `Dawn.Common.Windows`' "Static" class is now an extension on-top of the `Dawn.Common`'s "Static" class
 
 ## [1.0.0] / 2026-09-18
 - Initial Release
