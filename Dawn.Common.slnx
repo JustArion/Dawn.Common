@@ -2,6 +2,10 @@
   <Folder Name="/Build/">
     <Project Path="build/BuildSystem.csproj" />
   </Folder>
+  <Folder Name="/Documentation/">
+    <File Path=".github/readme.md" />
+    <File Path="CHANGELOG.md" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Dawn.Common.Windows.Tests/Dawn.Common.Windows.Tests.csproj" />
   </Folder>
