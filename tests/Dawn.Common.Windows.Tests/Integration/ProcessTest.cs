@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Dawn.Common.Windows.Extensions;
 using FluentAssertions;
-using NUnit.Framework.Internal;
 
 namespace Dawn.Common.Windows.Tests.Integration;
 

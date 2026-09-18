@@ -1,5 +1,4 @@
 using System.Security.Principal;
-using System.Windows.Forms;
 
 namespace Dawn.Common.Windows.Extensions;
 

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Threading;
 using Dawn.Common.Windows.TaskScheduler.Contracts;
 using Dawn.Common.Windows.TaskScheduler.Models;

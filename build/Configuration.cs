@@ -1,6 +1,5 @@
 #nullable disable
 using System.ComponentModel;
-using Fallout.Common.Tooling;
 
 [TypeConverter(typeof(TypeConverter<Configuration>))]
 public class Configuration : Enumeration

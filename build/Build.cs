@@ -1,14 +1,11 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.IO;
-using System.Collections.Generic;
 using Extensions;
 using Fallout.Common.CI.GitHubActions;
 using Fallout.Common.Git;
 using Fallout.Common.Tools.GitHub;
 using Fallout.Common.Tools.NuGet;
-using Octokit;
 using Serilog;
 using Project = Fallout.Common.ProjectModel.Project;
 

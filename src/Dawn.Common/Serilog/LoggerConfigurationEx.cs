@@ -4,7 +4,6 @@ using System.Security.Principal;
 using Dawn.Common.Models;
 using Dawn.Common.Serilog.Enrichers;
 using Dawn.Common.Serilog.Themes;
-using Serilog;
 using Serilog.Events;
 
 namespace Dawn.Common.Serilog;
