@@ -9,20 +9,22 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         fallout --generate-configuration GitHubActions_Pre-Release_on_Tag --host GitHubActions
+#         fallout --generate-configuration GitHubActions_Nuget_Release --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: Pre-Release_on_Tag
+name: Nuget_Release
 
 on:
-  push:
-    tags:
-      - 'p*'
+  workflow_dispatch:
+    inputs:
+      Version:
+        description: "Version"
+        required: true
 
 permissions:
-  contents: write
+  id-token: write
 
 jobs:
   windows-latest:
@@ -45,10 +47,10 @@ jobs:
           global-json-file: global.json
       - name: 'Restore: dotnet tools'
         run: dotnet tool restore
-      - name: 'Run: TaggedPreRelease'
-        run: dotnet fallout TaggedPreRelease
+      - name: 'Run: PublishNuget'
+        run: dotnet fallout PublishNuget
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          Version: ${{ github.event.inputs.Version }}
       - name: 'Publish: packages'
         uses: actions/upload-artifact@v5
         with:

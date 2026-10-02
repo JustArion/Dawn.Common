@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.IO;
@@ -8,6 +9,7 @@ using Fallout.Common.Tools.GitHub;
 using Fallout.Common.Tools.NuGet;
 using Serilog;
 using Project = Fallout.Common.ProjectModel.Project;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 [
     GitHubActions("Run Tests", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(Test)],
@@ -25,34 +27,30 @@ using Project = Fallout.Common.ProjectModel.Project;
         InvokedTargets = [nameof(TaggedRelease)],
         EnableGitHubToken = true,
         PublishArtifacts = true,
-        WritePermissions = [GitHubActionsPermissions.Contents],
+        WritePermissions = [GitHubActionsPermissions.Contents, GitHubActionsPermissions.IdToken],
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        ImportSecrets = [nameof(NugetPAT)],
         Lfs = true,
         OnPushTags = ["v*"]),
-    GitHubActions("Pre-Release on Tag", 
-        GitHubActionsImage.WindowsLatest,
-        InvokedTargets = [nameof(TaggedPreRelease)],
-        EnableGitHubToken = true,
-        PublishArtifacts = true,
-        WritePermissions = [GitHubActionsPermissions.Contents],
+    GitHubActions("Nuget Release", 
+        GitHubActionsImage.WindowsLatest, 
+        InvokedTargets = [nameof(PublishNuget)],
+        WritePermissions = [GitHubActionsPermissions.IdToken],
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
         Lfs = true,
-        OnPushTags = ["p*"]),
+        OnWorkflowDispatchRequiredInputs = ["Version"]),
     GitHubActions("Manual Release", 
         GitHubActionsImage.WindowsLatest, 
         InvokedTargets = [nameof(TaggedRelease)],
         EnableGitHubToken = true,
         PublishArtifacts = true,
-        WritePermissions = [GitHubActionsPermissions.Contents],
+        WritePermissions = [GitHubActionsPermissions.Contents, GitHubActionsPermissions.IdToken],
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        ImportSecrets = [nameof(NugetPAT)],
         Lfs = true,
         OnWorkflowDispatchRequiredInputs = ["Version"]) 
 ]
@@ -86,7 +84,7 @@ class Build : FalloutBuild
         : Version; 
     
     private static readonly Func<string, bool> _versionPredicate = s => s.StartsWith('v') || s.StartsWith('p');
-    private static string StripPrefixes(string? str) => str?.TrimStart('v').TrimStart('p');
+    private static string StripPrefixes(string? str) => str?.TrimStart('v').TrimStart('p') ?? "";
     private string GetVersion() => StripPrefixes(GetVersionTag());
     private static string Quote(string str) => $"\"{str}\"";
     
@@ -176,51 +174,45 @@ class Build : FalloutBuild
             Git($"push origin HEAD:{defaultBranch}");
         });
 
-    [Secret, Optional, Parameter("Private Access Token for publishing Nuget packages to GitHub")]
-    internal string NugetPAT;
+    Target PublishGithub => _ => _
+        .DependsOn(PackAll)
+        .Unlisted()
+        .Executes(() =>
+        {
+            // Push to GitHub Packages
+            (PackagesDirectory / "*symbols.nupkg").GlobFiles().ForEach(pkg =>
+            {
+                DotNetNuGetPush(options => options
+                    .SetTargetPath(pkg)
+                    .SetSource($"https://nuget.pkg.github.com/{Repository.GetGitHubOwner()}/index.json")
+                    .SetApiKey(Actions.Token));
+            });
+        });
+    
+    Target PublishNuget => _ => _
+        .DependsOn(PackAll)
+        .OnlyWhenStatic(() => IsServerBuild)
+        .Executes(async () =>
+        {
+            var nugetApiKey = await OIDC.Create("arion");
+            if (nugetApiKey.IsNullOrEmpty())
+            {
+                Assert.Fail("OIDC Nuget API Key not set");
+                return;
+            }
+            (PackagesDirectory / "*symbols.nupkg").GlobFiles().ForEach(pkg =>
+            {
+                DotNetNuGetPush(options => options
+                    .SetTargetPath(pkg)
+                    .SetSource("https://api.nuget.org/v3/index.json")
+                    .SetApiKey(nugetApiKey));
+            });
+        });
+
     Target Publish => _ => _
         .DependsOn(PackAll)
         .OnlyWhenStatic(() => IsServerBuild)
-        .Executes(() =>
-        {
-            if (string.IsNullOrWhiteSpace(NugetPAT))
-            {
-                Log.Information("PAT is null, so we're using actions Token instead");
-                NugetPAT = Actions.Token;
-            }
-
-            NugetPAT.NotNullOrWhiteSpace();
-            var source = $"https://nuget.pkg.github.com/{Repository.GetGitHubOwner()}/index.json";
-            
-            var preExisting = true;
-            if (!NuGetSourcesList().Any(x => x.Text.Contains("github")))
-            {
-                preExisting = false;
-                NuGetSourcesAdd(options => options
-                    .SetName("github")
-                    .SetUserName(Repository.GetGitHubOwner())
-                    .SetPassword(NugetPAT)
-                    .SetSource(source));
-            }
-
-            (PackagesDirectory / "*symbols.nupkg").GlobFiles().ForEach(target =>
-            {
-                NuGetPush(options => options
-                    .SetApiKey(NugetPAT)
-                    .SetSource(source)
-                    .SetTargetPath(target));
-            });
-
-            if (!preExisting)
-                NuGetSourcesRemove(options => options
-                    .SetName("github"));
-        });
-
-    // Tagged pre-release target (uploads assets to GH releases as prerelease)
-    Target TaggedPreRelease => _ => _
-        .DependsOn(PackAll)
-        .Unlisted()
-        .OnlyWhenStatic(() => IsServerBuild);
+        .DependsOn(PublishGithub, PublishNuget);
 
     // Tagged release that runs on v* tags
     Target TaggedRelease => _ => _

@@ -25,6 +25,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   windows-latest:
@@ -51,7 +52,6 @@ jobs:
         run: dotnet fallout TaggedRelease
         env:
           Version: ${{ github.event.inputs.Version }}
-          NugetPAT: ${{ secrets.NUGET_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Publish: packages'
         uses: actions/upload-artifact@v5
