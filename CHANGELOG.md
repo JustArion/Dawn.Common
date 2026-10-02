@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added extensions to `SafeMemoryMappedfViewHandle` to read unmanaged types easier
 - Made `Result<T>` implement `IAsyncDisposable` and `IDisposable` and disposes if the underlying type matches the interface
 - Add Win32 Icon utils
+- Add `UpdatePath` method to the `ITaskSchedulerService`
 
 ## [1.0.2] / 2026-09-18
 - Added `ProcessBinding` API
