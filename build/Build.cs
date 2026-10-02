@@ -36,7 +36,7 @@ using Project = Fallout.Common.ProjectModel.Project;
     GitHubActions("Nuget Release", 
         GitHubActionsImage.WindowsLatest, 
         InvokedTargets = [nameof(PublishNuget)],
-        WritePermissions = [GitHubActionsPermissions.IdToken],
+        WritePermissions = [GitHubActionsPermissions.Contents, GitHubActionsPermissions.IdToken],
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
