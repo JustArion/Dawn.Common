@@ -13,7 +13,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fallout.Common" Version="11.0.1" />
+        <PackageReference Include="Fallout.Common" Version="10.4.0" />
+        <PackageReference Include="Fallout.Components" Version="10.4.0" />
         <PackageReference Include="NuGet.CommandLine" Version="7.9.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

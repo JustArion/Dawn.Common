@@ -6,12 +6,15 @@ using Extensions;
 using Fallout.Common.CI.GitHubActions;
 using Fallout.Common.Git;
 using Fallout.Common.Tools.GitHub;
-using Fallout.Common.Tools.NuGet;
-using Serilog;
-using Project = Fallout.Common.ProjectModel.Project;
+using Fallout.Solutions;
+
+// using Project = Fallout.Common.ProjectModel.Project;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 [
+    GitHubActionsInput("Version", Required = false, Workflows = ["CI Build"]),
+    GitHubActionsInput("Version", Required = true, Workflows = ["Manual Release", "Nuget Release"]),
+    
     GitHubActions("Run Tests", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(Test)],
         On = [GitHubActionsTrigger.WorkflowDispatch],
         CacheIncludePatterns = ["~/.nuget/packages"],
@@ -20,8 +23,7 @@ using Project = Fallout.Common.ProjectModel.Project;
     GitHubActions("CI Build", GitHubActionsImage.WindowsLatest, InvokedTargets = [nameof(PackAll)], PublishArtifacts = true,
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
-        CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        OnWorkflowDispatchOptionalInputs = ["Version"]),
+        CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"]),
     GitHubActions("Release on Tag", 
         GitHubActionsImage.WindowsLatest,
         InvokedTargets = [nameof(TaggedRelease)],
@@ -36,12 +38,11 @@ using Project = Fallout.Common.ProjectModel.Project;
     GitHubActions("Nuget Release", 
         GitHubActionsImage.WindowsLatest, 
         InvokedTargets = [nameof(PublishNuget)],
-        WritePermissions = [GitHubActionsPermissions.Contents, GitHubActionsPermissions.IdToken],
+        WritePermissions = [GitHubActionsPermissions.IdToken],
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        Lfs = true,
-        OnWorkflowDispatchRequiredInputs = ["Version"]),
+        Lfs = true),
     GitHubActions("Manual Release", 
         GitHubActionsImage.WindowsLatest, 
         InvokedTargets = [nameof(TaggedRelease)],
@@ -51,14 +52,13 @@ using Project = Fallout.Common.ProjectModel.Project;
         Submodules = GitHubActionsSubmodules.Recursive,
         CacheIncludePatterns = ["~/.nuget/packages"],
         CacheKeyFiles = ["**/global.json", "**/*.csproj", "**/Directory.Packages.props", "**/packages.lock.json"],
-        Lfs = true,
-        OnWorkflowDispatchRequiredInputs = ["Version"]) 
+        Lfs = true) 
 ]
 class Build : FalloutBuild
 {
     public Build() => NoLogo = true;
 
-    [Solution(GenerateProjects = true)]
+    [Fallout.Solutions.Solution(GenerateProjects = true)]
     readonly Solution Solution;
     [GitRepository]
     GitRepository Repository;
@@ -99,8 +99,7 @@ class Build : FalloutBuild
         });
 
     Target Restore => _ => _
-        .Executes(() => DotNetRestore(s => s.SetProjectFile(Solution)
-            .SetVerbosity(DotNetVerbosity.detailed)));
+        .Executes(() => DotNetRestore(s => s.SetProjectFile(Solution)));
 
     Target Compile => _ => _
         .DependsOn(Restore)
