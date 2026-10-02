@@ -2,7 +2,7 @@ using Dawn.Common.Windows.TaskScheduler.Models;
 using Microsoft.Win32.TaskScheduler;
 using Task = Microsoft.Win32.TaskScheduler.Task;
 
-namespace Dawn.Common.Windows.TaskScheduler.Contracts;
+namespace Dawn.Common.Windows.Desktop.TaskScheduler.Contracts;
 
 public interface ITaskSchedulerService
 {
@@ -25,5 +25,7 @@ public interface ITaskSchedulerService
     public void RunOnStartup(string key, FileInfo file, params string[] args);
 
     public bool Remove(string key);
+    
+    public bool UpdatePath(string key, FileInfo filePath);
 }
 

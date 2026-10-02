@@ -1,5 +1,5 @@
 using System.Windows.Threading;
-using Dawn.Common.Windows.TaskScheduler.Contracts;
+using Dawn.Common.Windows.Desktop.TaskScheduler.Contracts;
 using Dawn.Common.Windows.TaskScheduler.Models;
 using Microsoft.Win32.TaskScheduler;
 using Action = System.Action;
@@ -249,6 +249,52 @@ public class TaskSchedulerService : ITaskSchedulerService, IDisposable
 
                 Folder.Value.DeleteTask(key, false);
                 _logger.Information("Task '{TaskName}' is removed", key);
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Failed to remove task '{TaskName}'", key);
+                return false;
+            }
+        });
+    }
+
+    public bool UpdatePath(string key, FileInfo filePath)
+    {
+        if (_disposed)
+            ObjectDisposedException.ThrowIf(_disposed, typeof(TaskSchedulerService));
+        
+        if (!filePath.Exists)
+            throw new ArgumentNullException(nameof(filePath));
+
+        return ExecuteOnDedicatedStaThread(() =>
+        {
+            try
+            {
+                if (!ContainsTask(key))
+                {
+                    _logger.Warning("Task '{TaskName}' is not present", key);
+                    return false;
+                }
+
+                using var task = GetTask(key);
+
+                if (task?.Definition.Actions.FirstOrDefault() is not ExecAction act)
+                    return false;
+
+                if (act.Path == filePath.FullName)
+                    return false;
+
+                if (act.WorkingDirectory == filePath.DirectoryName && act.Path == filePath.Name)
+                    return false;
+
+                var oldPath = Path.Combine(act.WorkingDirectory, act.Path);
+                act.WorkingDirectory = filePath.DirectoryName;
+                act.Path = filePath.Name;
+                
+                task.RegisterChanges();
+                    
+                _logger.Information("Task '{TaskName}' was updated from path {OldPath} to new path {NewPath}", key, oldPath, filePath.FullName);
                 return true;
             }
             catch (Exception e)
