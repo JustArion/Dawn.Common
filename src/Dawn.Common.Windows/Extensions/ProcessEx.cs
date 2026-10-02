@@ -7,7 +7,7 @@ public static class ProcessEx
 {
     internal readonly record struct WeakId(int PID, DateTime StartTime)
     {
-        public static implicit operator WeakId(Process proc) => new(proc.Id, Common.Static.SuppressExceptions(() => proc.StartTime));
+        public static implicit operator WeakId(Process proc) => new(proc.Id, Static.SuppressExceptions(() => proc.StartTime));
 
         public static bool operator ==(WeakId? a, WeakId? b) => a?.PID == b?.PID && a?.StartTime == b?.StartTime;
         public static bool operator !=(WeakId? a, WeakId? b) => !(a == b);
@@ -32,7 +32,7 @@ public static class ProcessEx
             : Result.Failed(GetLastError().GetException()!);
     }
     
-    private static bool IsSystemProcess(Process proc) => proc.Id <= SYSTEM_ID || Common.Static.SuppressExceptions(()=> proc.StartTime) == default;
+    private static bool IsSystemProcess(Process proc) => proc.Id <= SYSTEM_ID || Static.SuppressExceptions(()=> proc.StartTime) == default;
 
     private const int SYSTEM_ID = 4;
     private const int IDLE_ID = 0;

@@ -22,7 +22,7 @@ public static class FileEx
         {
             get
             {
-                var name = Common.Static.SuppressExceptions(() =>
+                var name = Static.SuppressExceptions(() =>
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
