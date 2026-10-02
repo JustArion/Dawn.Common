@@ -99,10 +99,8 @@ class Build : FalloutBuild
         });
 
     Target Restore => _ => _
-        .Executes(() =>
-        {
-            DotNetRestore(s => s.SetProjectFile(Solution));
-        });
+        .Executes(() => DotNetRestore(s => s.SetProjectFile(Solution)
+            .SetVerbosity(DotNetVerbosity.detailed)));
 
     Target Compile => _ => _
         .DependsOn(Restore)
