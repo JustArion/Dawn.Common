@@ -17,7 +17,7 @@ public readonly struct Result
 
 // ---
 
-public readonly struct Result<T>
+public readonly struct Result<T> : IDisposable, IAsyncDisposable
 {
     public override string ToString() => Value == null ? Exception?.ToString() ?? string.Empty : Value.ToString()!;
 
@@ -58,4 +58,16 @@ public readonly struct Result<T>
     }
 
     public static readonly Result<T> Failed = new() { Success = false };
+
+    public void Dispose()
+    {
+        if (Success && Value is IDisposable disposable)
+            disposable.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Success && Value is IAsyncDisposable disposable)
+            await disposable.DisposeAsync();
+    }
 }

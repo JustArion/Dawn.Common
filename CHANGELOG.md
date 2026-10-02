@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `FromLastError` extension to `Result` class in `Dawn.Common.Windows`
 - Added extensions to `nint` and `nuint` for adding with various offset types
 - Added extensions to `SafeMemoryMappedfViewHandle` to read unmanaged types easier
+- Made `Result<T>` implement `IAsyncDisposable` and `IDisposable` and disposes if the underlying type matches the interface
 
 ## [1.0.2] / 2026-09-18
 - Added `ProcessBinding` API
