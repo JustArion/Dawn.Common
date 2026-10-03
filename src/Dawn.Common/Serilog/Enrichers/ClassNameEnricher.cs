@@ -47,7 +47,4 @@ public partial class ClassNameEnricher : ILogEventEnricher
 
         return str;
     }
-
-    [GeneratedRegex("([a-z])([A-Z])")]
-    private static partial Regex CapitalLetterReplacement();
 }
