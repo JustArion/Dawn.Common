@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Development]
 - Added the [RiotTrayContextTheme](https://github.com/JustArion/RiotTrayContextTheme) to the repo
+- Added perf logging via attribute with `Perf` with FodyWeavers
 
 ## [1.0.3] / 2026-10-02
 - Added `FromLastError` extension to `Result` class in `Dawn.Common.Windows`
