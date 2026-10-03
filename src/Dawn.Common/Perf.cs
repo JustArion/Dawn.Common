@@ -5,7 +5,7 @@ using MethodBoundaryAspect.Fody.Attributes;
 namespace Dawn.Common;
 
 [Serializable]
-public class PerfAttribute(int warnDurationMs = -1) : OnMethodBoundaryAspect
+public class MonitorPerformanceAttribute(int warnDurationMs = -1) : OnMethodBoundaryAspect
 {
     public override void OnEntry(MethodExecutionArgs args)
     {
@@ -17,7 +17,9 @@ public class PerfAttribute(int warnDurationMs = -1) : OnMethodBoundaryAspect
         var ts = (long)args.MethodExecutionTag;
         var sw = Stopwatch.GetElapsedTime(ts);
         var method = args.Method;
-            
+
+        if (sw.TotalMilliseconds == 0)
+            return;
             
         Log.Verbose("{Type}::{MethodName} took {Time}", method.DeclaringType?.Name, method.Name, sw.Humanize());
 
