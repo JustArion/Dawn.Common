@@ -20,16 +20,12 @@ public class MonitorPerformanceAttribute(int warnDurationMs = -1) : OnMethodBoun
 
         if (sw.TotalMilliseconds == 0)
             return;
-            
-        Log.Verbose("{Type}::{MethodName} took {Time}", method.DeclaringType?.Name, method.Name, sw.Humanize());
 
-        if (warnDurationMs == -1)
-            return;
+        var shouldWarn = warnDurationMs > 0 && sw.TotalMilliseconds > warnDurationMs;
 
-        if (!(sw.TotalMilliseconds > warnDurationMs)) 
-            return;
-            
-        Log.Warning("{Type}::{MethodName} took {Time} which is higher than the expected {Expected} milliseconds", method.DeclaringType?.Name, method.Name, sw.Humanize(), warnDurationMs);
+        if (shouldWarn)
+            Log.Warning("{Type}::{MethodName} took {Time} which is higher than the expected {Expected} milliseconds", method.DeclaringType?.Name, method.Name, sw.Humanize(), warnDurationMs);
+        else Log.Verbose("{Type}::{MethodName} took {Time}", method.DeclaringType?.Name, method.Name, sw.Humanize());
     }
     
     public static IDisposable Monitor(Action<TimeSpan> callback)
