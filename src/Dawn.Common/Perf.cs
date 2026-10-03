@@ -5,7 +5,7 @@ using MethodBoundaryAspect.Fody.Attributes;
 namespace Dawn.Common;
 
 [Serializable]
-public class MonitorPerformanceAttribute(int warnDurationMs = -1) : OnMethodBoundaryAspect
+public class PerformanceMonitor(int warnDurationMs = -1) : OnMethodBoundaryAspect
 {
     public override void OnEntry(MethodExecutionArgs args)
     {
@@ -18,7 +18,7 @@ public class MonitorPerformanceAttribute(int warnDurationMs = -1) : OnMethodBoun
         var sw = Stopwatch.GetElapsedTime(ts);
         var method = args.Method;
 
-        if (sw.TotalMilliseconds == 0)
+        if ((int)sw.TotalMilliseconds == 0)
             return;
 
         var shouldWarn = warnDurationMs > 0 && sw.TotalMilliseconds > warnDurationMs;
