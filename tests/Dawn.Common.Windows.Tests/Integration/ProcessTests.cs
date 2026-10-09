@@ -5,7 +5,7 @@ using FluentAssertions;
 namespace Dawn.Common.Windows.Tests.Integration;
 
 [TestFixture(TestOf = typeof(ProcessEx))]
-public class ProcessTest
+public class ProcessTests
 {
     [Test]
     public void Should_GetParentProcessId()
