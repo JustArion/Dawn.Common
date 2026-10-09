@@ -7,16 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Development]
 - Added the [RiotTrayContextTheme](https://github.com/JustArion/RiotTrayContextTheme) to the repo
 - Added perf logging via attribute with `Perf` with FodyWeavers
-- Add a `Catch` extension to `Task<T>`
-- Add loading environment variables from `.env` files and returning what was added
+- Added a `Catch` extension to `Task<T>`
+- Added loading environment variables from `.env` files and returning what was added
 
 ## [1.0.3] / 2026-10-02
 - Added `FromLastError` extension to `Result` class in `Dawn.Common.Windows`
 - Added extensions to `nint` and `nuint` for adding with various offset types
 - Added extensions to `SafeMemoryMappedfViewHandle` to read unmanaged types easier
 - Made `Result<T>` implement `IAsyncDisposable` and `IDisposable` and disposes if the underlying type matches the interface
-- Add Win32 Icon utils
-- Add `UpdatePath` method to the `ITaskSchedulerService`
+- Added Win32 Icon utils
+- Added `UpdatePath` method to the `ITaskSchedulerService`
 
 ## [1.0.2] / 2026-09-18
 - Added `ProcessBinding` API
