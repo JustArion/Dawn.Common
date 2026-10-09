@@ -7,6 +7,8 @@
     <File Path="CHANGELOG.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <File Path="tests/Directory.Packages.props" />
+    <Project Path="tests/Dawn.Common.Tests/Dawn.Common.Tests.csproj" />
     <Project Path="tests/Dawn.Common.Windows.Tests/Dawn.Common.Windows.Tests.csproj" />
   </Folder>
   <Folder Name="/Windows/">
