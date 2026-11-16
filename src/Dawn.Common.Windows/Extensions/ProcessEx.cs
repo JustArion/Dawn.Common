@@ -29,7 +29,7 @@ public static class ProcessEx
         var length = (uint)sb.Capacity + 1;
         return QueryFullProcessImageName(proc.Handle, PROCESS_NAME.PROCESS_NAME_WIN32, sb, ref length) 
             ? sb.ToString() 
-            : Result.Failed(GetLastError().GetException()!);
+            : Result.FromLastError();
     }
     
     private static bool IsSystemProcess(Process proc) => proc.Id <= SYSTEM_ID || Static.SuppressExceptions(()=> proc.StartTime) == default;
@@ -93,12 +93,15 @@ public static class ProcessEx
                     if (_processFilePathCache.TryGetValue(proc, out var filePath))
                         return filePath;
 
-                    GetProcessFilePath(proc).Deconstruct(out var success, out var exception, out var value);
+                    // GetProcessFilePath(proc).Deconstruct(out var success, out var exception, out var value);
 
-                    if (!success)
-                        return Result.Failed(exception!);
+                    var result = GetProcessFilePath(proc);
+                    if (result is Error error)
+                        return error;
+                    if (result is not string value)
+                        throw new NotSupportedException();
 
-                    var fi = new FileInfo(value!);
+                    var fi = new FileInfo(value);
 
                     if (!_processFilePathCache.TryAdd(proc, fi) || _processFilePathCache.Count <= EVICTION_LIMIT)
                         return fi;

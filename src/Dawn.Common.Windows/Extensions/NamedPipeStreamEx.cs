@@ -9,10 +9,7 @@ public static class NamedPipeStreamEx
         public Result<int> ServerProcessId =>
             GetNamedPipeServerProcessId(client.SafePipeHandle.DangerousGetHandle(), out var pid)
                 ? (int)pid
-                : Result<int>.Failed with
-                {
-                    Exception = GetLastError().GetException()
-                };
+                : Result.FromLastError();
     }
 
     extension(NamedPipeServerStream server)
@@ -20,9 +17,6 @@ public static class NamedPipeStreamEx
         public Result<int> ClientProcessId =>
             GetNamedPipeClientProcessId(server.SafePipeHandle.DangerousGetHandle(), out var pid)
                 ? (int)pid
-                : Result<int>.Failed with
-                {
-                    Exception = GetLastError().GetException()
-                };
+                : Result.FromLastError();
     }
 }

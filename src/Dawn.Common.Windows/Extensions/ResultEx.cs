@@ -4,6 +4,6 @@ public static class ResultEx
 {
     extension(Result)
     {
-        public static Result FromLastError() => Result.Failed(GetLastError().GetException()!);
+        public static Result FromLastError() => Error.Failed(GetLastError().GetException()!);
     }
 }
