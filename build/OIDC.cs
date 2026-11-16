@@ -1,39 +1,50 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 public static class OIDC
 {
-    private const string AUDIENCE = "https://www.nuget.org";
+    private static readonly HttpClient _client = new();
+    private const string AUDIENCE = "nuget.org";
+
     public static async Task<string> Create(string userName)
     {
         // GitHub populates these when we have the 'id-token: write' permission
-        var oidcToken = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_TOKEN");
-        var oidcRequestUrl = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_URL");
+        var requestToken = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_TOKEN");
+        var requestUrl = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_URL");
 
-        if (string.IsNullOrWhiteSpace(oidcToken) || string.IsNullOrWhiteSpace(oidcRequestUrl))
-            throw new NotSupportedException("OIDC tokens are only issued by workflows that have the `id-token: write` permission granted, this is either not a cloud workflow, or the permission has not been granted");
+        if (string.IsNullOrWhiteSpace(requestToken) || string.IsNullOrWhiteSpace(requestUrl))
+            throw new NotSupportedException("OIDC tokens are only issued by workflows that have the `id-token: write` permission granted.");
 
-        // request the token
-        var tokenUrl = $"{oidcRequestUrl}&audience={Uri.EscapeDataString(AUDIENCE)}";
+        using var oidcRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"{requestUrl}&audience={Uri.EscapeDataString(AUDIENCE)}");
+        oidcRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", requestToken);
 
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new("Bearer", oidcToken);
+        using var oidcResponse = await _client.SendAsync(oidcRequest);
+        oidcResponse.EnsureSuccessStatusCode();
+        var oidc = await oidcResponse.Content.ReadFromJsonAsync<OidcResponse>();
 
-        var response = await client.GetFromJsonAsync<OidcResponse>(tokenUrl);
-        var token = response.Value;
-        
-        // request nuget api key with token
-        var response2 = await client.PostAsJsonAsync("https://www.nuget.org/api/v2/token", new NugetTokenRequest(userName));
-        response2.EnsureSuccessStatusCode();
-        var responseBody = await response2.Content.ReadFromJsonAsync<NugetTokenResponse>();
+        using var nugetRequest = new HttpRequestMessage(HttpMethod.Post, "https://www.nuget.org/api/v2/token");
+        nugetRequest.Content = JsonContent.Create(new NugetTokenRequest(userName), options: JsonSerializerOptions.Web);
+        nugetRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", oidc.Value);
 
-        return responseBody.ApiKey;
+        using var nugetResponse = await _client.SendAsync(nugetRequest);
+        if (!nugetResponse.IsSuccessStatusCode)
+        {
+            // The body usually says why NuGet rejected it
+            var body = await nugetResponse.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"NuGet token exchange failed ({(int)nugetResponse.StatusCode}): {body}");
+        }
+
+        var result = await nugetResponse.Content.ReadFromJsonAsync<NugetTokenResponse>();
+        return result.ApiKey;
     }
 
     private record OidcResponse(string Value);
-
     private record NugetTokenRequest(string Username, string TokenType = "ApiKey");
     private record NugetTokenResponse(string ApiKey);
 }
