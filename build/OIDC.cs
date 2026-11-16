@@ -14,7 +14,7 @@ public static class OIDC
 
         return client;
     });
-    private const string AUDIENCE = "nuget.org";
+    private const string AUDIENCE = "https://www.nuget.org";
 
     public static async Task<string> Create(string userName)
     {
