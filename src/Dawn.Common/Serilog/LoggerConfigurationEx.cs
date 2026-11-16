@@ -33,6 +33,8 @@ public static class LoggerConfigurationEx
             config.AddCommon(options, new DirectoryInfo(Environment.CurrentDirectory));
         public LoggerConfiguration AddCommon(CommonLoggingOptions options, DirectoryInfo logDirectory)
         {
+            options.Deconstruct(out var isConsoleLogging, out var isFileLogging, out var isExtendedLogging, out var customSeqUrl);
+            
             config.MinimumLevel.Is(LogEventLevel.Verbose)
                 .Enrich.With<ClassNameEnricher>()
                 .Enrich.WithProcessName()
@@ -43,13 +45,11 @@ public static class LoggerConfigurationEx
                     applyThemeToRedirectedOutput: true
                 );
             
-            options.Deconstruct(out var includeFileLogging, out var extendedLogging, out var customSeqUrl );
-
-            if (includeFileLogging)
+            if (isFileLogging)
             {
                 config.WriteTo.File(Path.Combine(logDirectory.FullName, GetLogFileName()),
                     outputTemplate: LOGGING_FORMAT,
-                    restrictedToMinimumLevel: extendedLogging
+                    restrictedToMinimumLevel: isExtendedLogging
                         ? LogEventLevel.Verbose
                         : LogEventLevel.Information,
                     retainedFileCountLimit: 1,
@@ -61,7 +61,7 @@ public static class LoggerConfigurationEx
             config.WriteTo.Seq(string.IsNullOrWhiteSpace(customSeqUrl)
                     ? "http://localhost:9999"
                     : customSeqUrl,
-                restrictedToMinimumLevel: extendedLogging
+                restrictedToMinimumLevel: isExtendedLogging
                     ? LogEventLevel.Verbose
                     : LogEventLevel.Information);
 

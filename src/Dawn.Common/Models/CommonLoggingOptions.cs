@@ -1,9 +1,10 @@
 ﻿namespace Dawn.Common.Models;
 
-public record struct CommonLoggingOptions(bool IncludeFileLogging, bool ExtendedLogging, string CustomSEQUrl)
+public readonly record struct CommonLoggingOptions(bool IncludeConsoleLogging, bool IncludeFileLogging, bool ExtendedLogging, string CustomSEQUrl)
 {
     public static CommonLoggingOptions FromLaunchArgs(StandardLaunchArgs args) => 
         new(
+            true,
             args.FileLogging,
             args.ExtendedLogging,
             args.HasCustomSeqUrl 
