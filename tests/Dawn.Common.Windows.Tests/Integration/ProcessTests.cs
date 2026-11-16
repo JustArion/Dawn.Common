@@ -37,12 +37,15 @@ public class ProcessTests
         var parent = proc.GetParentProcess();
 
         // Assert
-        parent.Success
-            .Should().Be(true);
-        parent
-            .Should().NotBeNull();
-        
-        Assert.Pass($"Parent: {parent.Value!.ProcessName}");
+        switch (parent.Value)
+        {
+            case Process parentProc:
+                Assert.Pass($"Parent: {parentProc.ProcessName}");
+                return;
+            default:
+                Assert.Fail(parent.Value!.ToString()!);
+                break;
+        }
     }
 
     [Test]
