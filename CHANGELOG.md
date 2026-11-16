@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added perf logging via attribute with `Perf` with FodyWeavers
 - Added a `Catch` extension to `Task<T>`
 - Added loading environment variables from `.env` files and returning what was added
+- Added `.NET 11` Union support to `Result<T>` types
+- Allow console logs to be toggled via `AddCommon`
+- Bumped to `.NET 11`
 
 ## [1.0.3] / 2026-10-02
 - Added `FromLastError` extension to `Result` class in `Dawn.Common.Windows`
