@@ -11,6 +11,8 @@ public static class OIDC
     {
         var client = new HttpClient();
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Dawn.Common-OIDC-Publisher/1.0");
+
+        return client;
     });
     private const string AUDIENCE = "nuget.org";
 
