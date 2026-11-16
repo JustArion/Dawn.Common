@@ -7,11 +7,16 @@ using System.Threading.Tasks;
 
 public static class OIDC
 {
-    private static readonly HttpClient _client = new();
+    private static readonly Lazy<HttpClient> _client = new(() =>
+    {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Dawn.Common-OIDC-Publisher/1.0");
+    });
     private const string AUDIENCE = "nuget.org";
 
     public static async Task<string> Create(string userName)
     {
+        var client = _client.Value;
         // GitHub populates these when we have the 'id-token: write' permission
         var requestToken = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_TOKEN");
         var requestUrl = Environment.GetEnvironmentVariable("ACTIONS_ID_TOKEN_REQUEST_URL");
@@ -24,7 +29,7 @@ public static class OIDC
             $"{requestUrl}&audience={Uri.EscapeDataString(AUDIENCE)}");
         oidcRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", requestToken);
 
-        using var oidcResponse = await _client.SendAsync(oidcRequest);
+        using var oidcResponse = await client.SendAsync(oidcRequest);
         oidcResponse.EnsureSuccessStatusCode();
         var oidc = await oidcResponse.Content.ReadFromJsonAsync<OidcResponse>();
 
@@ -32,7 +37,7 @@ public static class OIDC
         nugetRequest.Content = JsonContent.Create(new NugetTokenRequest(userName), options: JsonSerializerOptions.Web);
         nugetRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", oidc.Value);
 
-        using var nugetResponse = await _client.SendAsync(nugetRequest);
+        using var nugetResponse = await client.SendAsync(nugetRequest);
         if (!nugetResponse.IsSuccessStatusCode)
         {
             // The body usually says why NuGet rejected it
