@@ -17,7 +17,7 @@ public class ProcessTests
         var parentId = proc.ParentId;
 
         // Assert
-        parentId.Success
+        parentId.IsSuccess
             .Should().Be(true);
         
         parentId.Value

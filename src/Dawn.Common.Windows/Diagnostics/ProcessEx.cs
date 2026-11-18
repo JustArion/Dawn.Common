@@ -14,7 +14,7 @@ public static class ProcessEx
             }
             catch (Exception e)
             {
-                return Result.Failed(e);
+                return e;
             }
         }
     }

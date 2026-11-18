@@ -1,51 +1,67 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Dawn.Common.Exceptions;
+﻿using Dawn.Common.Exceptions;
 
 namespace Dawn.Common;
 
-public union Result(bool, Error)
+public sealed record Error(string Message, Exception? Exception = null)
 {
-    public static Result Failed(Error error) => error;
+    public static implicit operator Error(string msg) => new(msg);
+    public static implicit operator Error(Exception ex) => new(ex.Message, ex);
+    
+    public Exception ToException() => Exception ?? new ResultException(Message);
+    public override string ToString() => Message;
 }
 
-public union Result<T>(T, bool, Error) : IAsyncDisposable, IDisposable
+public union Result<T>(T, Error)
 {
-    public static Result<T> Transfer<T1>(Result<T1> resultA) => (Error)resultA.Value!;
+    public static implicit operator T(Result<T> result) => result.Unwrap();
 
-    public bool Success => Value is T;
-    public static implicit operator Result<T>(Result result) =>
-        result switch
-        {
-            bool b => b,
-            Error error => error,
-        };
+    public static implicit operator Result<T>(T value) => new(value);
+    public static implicit operator Result<T>(Error error) => new (error);
+    public static implicit operator Result<T>(Exception ex) => (Error)ex;
+    
+    public bool IsSuccess => this is T;
 
-    public static implicit operator T(Result<T> result)
+    public T Unwrap() => this switch
     {
-        switch (result.Value)
-        {
-            case T val:
-                return val;
-            case Error error:
-                switch (error)
-                {
-                    case string str:
-                        throw new ResultException(str);
-                    case Exception ex:
-                        throw ex;
-                }
+        T value => value,
+        Error error => throw error.ToException(),
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
-                break;
-        }
+    public T UnwrapOr(T fallback) => this switch
+    {
+        T value => value,
+        _ => fallback,
+    };
 
-        throw new NullReferenceException(nameof(result.Value));
-    }
-    public override string ToString() => Value?.ToString() ?? string.Empty; 
+    public Result<TResult> Map<TResult>(Func<T, TResult> map) => this switch
+    {
+        T value => map(value),
+        Error error => error,
+        _ => throw new ArgumentOutOfRangeException(nameof(map))
+    };
+
+    public Result<TResult> Bind<TResult>(Func<T, Result<TResult>> bind) => this switch
+    {
+        T value => bind(value),
+        Error error => error,
+        _ => throw new ArgumentOutOfRangeException(nameof(bind))
+    };
+    
+    public Result<TResult> Transfer<TResult>() => this switch
+    {
+        Error error => error,
+        _ => throw new InvalidOperationException("Result is successful; use Map or Bind to transform the value."),
+    };
+
+    public override string ToString() => Value?.ToString() ?? string.Empty;
+
     public void Dispose()
     {
         if (Value is IDisposable disposable)
             disposable.Dispose();
     }
+
     public async ValueTask DisposeAsync()
     {
         if (Value is IAsyncDisposable disposable)
@@ -53,8 +69,9 @@ public union Result<T>(T, bool, Error) : IAsyncDisposable, IDisposable
     }
 }
 
-public union Error(string, Exception)
+public static class Result
 {
-    public override string ToString() => Value?.ToString() ?? string.Empty; 
-    public static Error Failed(Error error) => error;
+    public static Result<T> Ok<T>(T value) => value;
+    public static Result<T> Fail<T>(string message, Exception? ex = null) => new Error(message, ex);
 }
+

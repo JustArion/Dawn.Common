@@ -64,7 +64,7 @@ public static class ProcessEx
                 }
                 catch (Exception e)
                 {
-                    return Result.Failed(e);
+                    return e;
                 }
             }
         }
@@ -77,7 +77,7 @@ public static class ProcessEx
             }
             catch (Exception e)
             {
-                return Result.Failed(e);
+                return e;
             }
         }
 
@@ -88,20 +88,16 @@ public static class ProcessEx
                 try
                 {
                     if (proc.Id == 0)
-                        return Result.Failed(new InvalidOperationException("System Idle does not have a file path"));
+                        return new Error($"Process {proc.Id} ({proc.ProcessName}) has no file path");
 
                     if (_processFilePathCache.TryGetValue(proc, out var filePath))
                         return filePath;
 
-                    // GetProcessFilePath(proc).Deconstruct(out var success, out var exception, out var value);
-
                     var result = GetProcessFilePath(proc);
                     if (result is Error error)
                         return error;
-                    if (result is not string value)
-                        throw new NotSupportedException();
 
-                    var fi = new FileInfo(value);
+                    var fi = new FileInfo(result.Unwrap());
 
                     if (!_processFilePathCache.TryAdd(proc, fi) || _processFilePathCache.Count <= EVICTION_LIMIT)
                         return fi;
@@ -114,7 +110,7 @@ public static class ProcessEx
                 }
                 catch (Exception e)
                 {
-                    return Result.Failed(e);
+                    return e;
                 }
             }
         }
