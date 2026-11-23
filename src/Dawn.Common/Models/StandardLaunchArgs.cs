@@ -64,5 +64,5 @@ public abstract record StandardLaunchArgs
 
     public static bool Contains(string key, string[] cliArgs, bool checkEnv = false) => cliArgs.Contains($"--{key = ToKebabCase(key)}", StringComparer.InvariantCultureIgnoreCase) || (checkEnv && Environment.GetEnvironmentVariable(key) is not null);
 
-    public static string ToKebabCase(string str) => str.ToLower().Replace(' ', '-');
+    public static string ToKebabCase(string str) => str.ToLowerInvariant().Replace(' ', '-');
 }
