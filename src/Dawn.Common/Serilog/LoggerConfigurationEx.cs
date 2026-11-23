@@ -35,19 +35,18 @@ public static class LoggerConfigurationEx
         {
             options.Deconstruct(out var isConsoleLogging, out var isFileLogging, out var isExtendedLogging, out var customSeqUrl);
 
-            config.MinimumLevel.Is(LogEventLevel.Verbose);
+            config.MinimumLevel.Is(LogEventLevel.Verbose)
+                .Enrich.With<ClassNameEnricher>()
+                .Enrich.WithProcessName()
+                .Enrich.FromLogContext();
 
             if (isConsoleLogging)
             {
-                config.Enrich.With<ClassNameEnricher>()
-                    .Enrich.WithProcessName()
-                    .Enrich.FromLogContext()
-                    .WriteTo.Console(
-                        theme: SerilogBlizzardTheme.GetTheme,
-                        outputTemplate: LOGGING_FORMAT,
-                        restrictedToMinimumLevel: LogEventLevel.Verbose,
-                        applyThemeToRedirectedOutput: true
-                    );
+                config.WriteTo.Console(
+                    theme: SerilogBlizzardTheme.GetTheme,
+                    outputTemplate: LOGGING_FORMAT,
+                    restrictedToMinimumLevel: LogEventLevel.Verbose,
+                    applyThemeToRedirectedOutput: true);
             }
             
             if (isFileLogging)
