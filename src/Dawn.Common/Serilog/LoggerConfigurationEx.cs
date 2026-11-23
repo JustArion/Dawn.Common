@@ -34,16 +34,19 @@ public static class LoggerConfigurationEx
         public LoggerConfiguration AddCommon(CommonLoggingOptions options, DirectoryInfo logDirectory)
         {
             options.Deconstruct(out var isConsoleLogging, out var isFileLogging, out var isExtendedLogging, out var customSeqUrl);
-            
-            config.MinimumLevel.Is(LogEventLevel.Verbose)
-                .Enrich.With<ClassNameEnricher>()
-                .Enrich.WithProcessName()
-                .Enrich.FromLogContext()
-                .WriteTo.Console(
-                    theme: SerilogBlizzardTheme.GetTheme,
-                    outputTemplate: LOGGING_FORMAT,
-                    applyThemeToRedirectedOutput: true
-                );
+
+            if (isConsoleLogging)
+            {
+                config.MinimumLevel.Is(LogEventLevel.Verbose)
+                    .Enrich.With<ClassNameEnricher>()
+                    .Enrich.WithProcessName()
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console(
+                        theme: SerilogBlizzardTheme.GetTheme,
+                        outputTemplate: LOGGING_FORMAT,
+                        applyThemeToRedirectedOutput: true
+                    );
+            }
             
             if (isFileLogging)
             {
