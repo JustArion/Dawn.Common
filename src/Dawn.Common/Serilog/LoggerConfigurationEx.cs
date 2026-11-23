@@ -10,7 +10,7 @@ namespace Dawn.Common.Serilog;
 
 public static class LoggerConfigurationEx
 {
-    private const string LOGGING_FORMAT = "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
+    public const string LOGGING_FORMAT = "{Level:u1} {Timestamp:yyyy-MM-dd HH:mm:ss.ffffff}   [{Source}] {Message:lj}{NewLine}{Exception}";
     
         
     #if NET10_0_WINDOWS_OR_GREATER
@@ -35,15 +35,17 @@ public static class LoggerConfigurationEx
         {
             options.Deconstruct(out var isConsoleLogging, out var isFileLogging, out var isExtendedLogging, out var customSeqUrl);
 
+            config.MinimumLevel.Is(LogEventLevel.Verbose);
+
             if (isConsoleLogging)
             {
-                config.MinimumLevel.Is(LogEventLevel.Verbose)
-                    .Enrich.With<ClassNameEnricher>()
+                config.Enrich.With<ClassNameEnricher>()
                     .Enrich.WithProcessName()
                     .Enrich.FromLogContext()
                     .WriteTo.Console(
                         theme: SerilogBlizzardTheme.GetTheme,
                         outputTemplate: LOGGING_FORMAT,
+                        restrictedToMinimumLevel: LogEventLevel.Verbose,
                         applyThemeToRedirectedOutput: true
                     );
             }
@@ -51,22 +53,24 @@ public static class LoggerConfigurationEx
             if (isFileLogging)
             {
                 config.WriteTo.File(Path.Combine(logDirectory.FullName, GetLogFileName()),
-                    outputTemplate: LOGGING_FORMAT,
-                    restrictedToMinimumLevel: isExtendedLogging
-                        ? LogEventLevel.Verbose
+                    restrictedToMinimumLevel: isExtendedLogging 
+                        ? LogEventLevel.Verbose 
                         : LogEventLevel.Information,
+                    outputTemplate: LOGGING_FORMAT,
                     retainedFileCountLimit: 1,
                     rollOnFileSizeLimit: true,
                     fileSizeLimitBytes: (long)Math.Pow(1024, 2) * 20, // 20mb
                     flushToDiskInterval: TimeSpan.FromSeconds(1));
             }
 
-            config.WriteTo.Seq(string.IsNullOrWhiteSpace(customSeqUrl)
-                    ? "http://localhost:9999"
-                    : customSeqUrl,
-                restrictedToMinimumLevel: isExtendedLogging
-                    ? LogEventLevel.Verbose
-                    : LogEventLevel.Information);
+                #if RELEASE
+                config.WriteTo.Seq(string.IsNullOrWhiteSpace(customSeqUrl)
+                        ? "http://localhost:9999"
+                        : customSeqUrl,
+                        restrictedToMinimumLevel: isExtendedLogging 
+                            ? LogEventLevel.Verbose 
+                            : LogEventLevel.Information);
+                #endif
 
             return config;
         }
