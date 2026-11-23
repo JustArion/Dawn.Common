@@ -5,31 +5,30 @@ namespace Dawn.Common.Models;
 
 public class ProcessBinding : IDisposable
 {
+    private readonly Action<int> _onExit;
     private readonly Process? _boundProcess;
     private CancellationTokenSource? _exitWaitCts;
     
-    /// <summary>
-    /// Subscribing to the exit via this removes the responsibility of exiting to the subscriber 
-    /// </summary>
-    /// <remarks>The subject is the exit code of the bound process</remarks>
-    public Subject<int> BoundProcessExited { get; } = new();
-
-    public ProcessBinding(int pid)
+    public static ProcessBinding BindTo(int processId, Action<int> onExit) => new(processId, onExit);
+    public static ProcessBinding BindTo(int processId) => new(processId);
+    public ProcessBinding(int pid, Action<int> onExit)
     {
+        _onExit = onExit;
         try
         {
             _boundProcess = Process.GetProcessById(pid);
 
             SubscribeOrWaitForExit(_boundProcess);
 
-            Log.Information("Bound to process ({Pid})", pid);
+            // Log.Debug("Bound to process ({Pid})", pid);
         }
         catch (Exception e)
         {
             Log.Warning(e, "Failed to bind to process ({Pid})", pid);
         }
-
     }
+
+    public ProcessBinding(int pid) : this(pid, Environment.Exit) {}
 
     private void SubscribeOrWaitForExit(Process proc)
     {
@@ -56,16 +55,17 @@ public class ProcessBinding : IDisposable
     protected virtual void OnProcessExit(object? sender, EventArgs e)
     {
         var exitCode = _boundProcess!.ExitCode;
-        Log.Information("Bound process has exited (Exit Code: {ExitCode})", exitCode);
-        
-        if (BoundProcessExited.HasObservers)
-            BoundProcessExited.OnNext(exitCode);
-        else 
-            Environment.Exit(exitCode);
+        Log.Verbose("Bound process '{ProcessName}' has exited (Exit Code: {ExitCode})", _boundProcess?.ProcessName, exitCode);
+
+        _onExit(exitCode);
     }
 
+    private bool _disposed;
     public virtual void Dispose()
     {
+        if (_disposed)
+            return;
+        _disposed = true;
         GC.SuppressFinalize(this);
         _exitWaitCts?.Cancel();
         _boundProcess?.Dispose();
