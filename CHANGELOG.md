@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `.NET 11` Union support to `Result<T>` types
 - Allow console logs to be toggled via `AddCommon`
 - Bumped to `.NET 11`
+- Process Binding now allows for callbacks instead of purely exiting when the bound process exits
+- Console logging can now be disabled
 
 ## [1.0.3] / 2026-10-02
 - Added `FromLastError` extension to `Result` class in `Dawn.Common.Windows`
