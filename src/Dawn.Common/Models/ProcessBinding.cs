@@ -8,6 +8,7 @@ public class ProcessBinding : IDisposable
     private readonly Action<int> _onExit;
     private readonly Process? _boundProcess;
     private CancellationTokenSource? _exitWaitCts;
+    private string? _processName;
     
     public static ProcessBinding BindTo(int processId, Action<int> onExit) => new(processId, onExit);
     public static ProcessBinding BindTo(int processId) => new(processId);
@@ -17,6 +18,7 @@ public class ProcessBinding : IDisposable
         try
         {
             _boundProcess = Process.GetProcessById(pid);
+            _processName = _boundProcess.ProcessName;
 
             SubscribeOrWaitForExit(_boundProcess);
 
@@ -39,7 +41,7 @@ public class ProcessBinding : IDisposable
         }
         catch (Exception e)
         {
-            Log.Verbose(e, "Unable to get notified when '{ProceName}' ({Pid}) exits. Spawning wait task instead", proc.ProcessName, proc.Id);
+            Log.Verbose(e, "Unable to get notified when '{ProceName}' ({Pid}) exits. Spawning wait task instead", _processName, proc.Id);
 
             _exitWaitCts = new();
             Task.Factory.StartNew(()=> WaitForProcessExitAsync(_exitWaitCts.Token), TaskCreationOptions.LongRunning);
@@ -55,7 +57,7 @@ public class ProcessBinding : IDisposable
     protected virtual void OnProcessExit(object? sender, EventArgs e)
     {
         var exitCode = _boundProcess!.ExitCode;
-        Log.Verbose("Bound process '{ProcessName}' has exited (Exit Code: {ExitCode})", _boundProcess?.ProcessName, exitCode);
+        Log.Verbose("Bound process '{ProcessName}' has exited (Exit Code: {ExitCode})", _processName, exitCode);
 
         _onExit(exitCode);
     }

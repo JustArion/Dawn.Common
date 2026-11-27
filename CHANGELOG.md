@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Development]
 - Made Perf log only in MS to allow for filtering based on duration
+- Added  Observable extensions that catch exceptions
+- Fixed `ProcessBinding` throwing an error on BoundProcess exit
 
 ## [1.0.6] / 2026-11-23
 - Added the [RiotTrayContextTheme](https://github.com/JustArion/RiotTrayContextTheme) to the repo
